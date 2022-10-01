@@ -43,8 +43,11 @@ export const applyAuthRoutes = (router) => {
       const user = store.users.find(({ client }) => client.user.id === newClient.user.id);
       if (user) {
         user.client = newClient;
+        user.player = player;
+        user.accessToken = accessToken;
+      } else {
+        store.users.push({ client: newClient, player, accessToken, listeners: [], role: 'none' });
       }
-      store.users.push({ client: newClient, player, accessToken, listeners: [], role: 'none' });
       res.status(200);
       res.send({ message: 'authorized', accessToken });
     } catch (e) {
