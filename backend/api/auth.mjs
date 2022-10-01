@@ -1,4 +1,5 @@
-import { Client, Player } from "spotify-api.js";
+import spotifyApi from "spotify-api.js";
+const { Client, Player } = spotifyApi;
 import { store } from "../store.mjs";
 import { randomString } from "../lib/randomString.js";
 import axios from "axios";
