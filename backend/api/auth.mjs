@@ -27,7 +27,9 @@ export const applyAuthRoutes = (router) => {
 
       const tokens = (await axios.post('https://accounts.spotify.com/api/token', params, config))?.data;
 
-      const client = await Client.create({
+      const newClient = await Client.create({
+        refreshToken: true,
+        retryOnRateLimit: true,
         token: {
           clientID: store.clientID,
           clientSecret: store.clientSecret,
@@ -35,9 +37,13 @@ export const applyAuthRoutes = (router) => {
           refreshToken: tokens.refresh_token,
         },
       });
-      const player = new Player(client);
+      const player = new Player(newClient);
       const accessToken = randomString(64);
-      store.users.push({ client, player, accessToken, listeners: [], role: 'none' });
+      const user = store.users.find(({ client }) => client.user.id === newClient.user.id);
+      if (user) {
+        user.client = newClient;
+      }
+      store.users.push({ client: newClient, player, accessToken, listeners: [], role: 'none' });
       res.status(200);
       res.send({ message: 'authorized', accessToken });
     } catch (e) {
