@@ -3,6 +3,8 @@ import { auth } from "./middlewares/auth.mjs";
 
 import { applyAuthRoutes } from "./api/auth.mjs";
 import { applyApiRoutes, applyPublicRoutes } from "./api/index.mjs";
+import mongoose from "mongoose";
+import { store } from "./store.mjs";
 
 // express server
 const port = 3000;
@@ -28,5 +30,8 @@ applyApiRoutes(router);
 
 applyPublicRoutes(publicRouter);
 
+await mongoose.connect(store.mongodbConnstring);
+console.log('mongodb connected');
+
 app.listen(port);
-console.log('ready');
+console.log('express started');

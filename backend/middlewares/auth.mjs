@@ -1,11 +1,14 @@
-import { store } from "../store.mjs";
+import { UserStore } from "../db/schemas.mjs";
 
-export const auth = (req, res, next) => {
+export const auth = async (req, res, next) => {
+
   const accessToken = req.headers['access-token'];
-  res.locals.user = store.users.find(user => user.accessToken === accessToken);
+  res.locals.user = await UserStore.findOne().byAccessToken(accessToken);
   if (!res.locals.user) {
     res.status(401);
     res.send({ message: 'unauthorized' });
+    return;
   }
-  else next();
+  console.log('middleware', res.locals.user, await res.locals.user.spotify.local);
+  next();
 };

@@ -1,8 +1,7 @@
-import spotifyApi from "spotify-api.js";
-const { Client, Player } = spotifyApi;
 import { store } from "../store.mjs";
-import { randomString } from "../lib/randomString.js";
-import axios from "axios";
+import { randomString } from "../lib/randomString.mjs";
+import { UserStore } from "../db/schemas.mjs";
+import { createLocalUser, findUserBySpotifyId } from "../lib/helpers.mjs";
 
 export const applyAuthRoutes = (router) => {
 
@@ -14,44 +13,36 @@ export const applyAuthRoutes = (router) => {
     }
     const { code, state } = req.body;
     try {
-      const params = new URLSearchParams();
-      params.append('grant_type', 'authorization_code');
-      params.append('code', code);
-      params.append('redirect_uri', store.redirectURL);
+      const newUser = await createLocalUser({ code });
+      const user = await findUserBySpotifyId({ userId: newUser.client.user.id });
 
-      const config = {
-        headers: {
-          'Authorization': 'Basic ' + (new Buffer(store.clientID + ':' + store.clientSecret).toString('base64')),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        }
-      };
-
-      const tokens = (await axios.post('https://accounts.spotify.com/api/token', params, config))?.data;
-
-      const newClient = await Client.create({
-        refreshToken: true,
-        retryOnRateLimit: true,
-        token: {
-          clientID: store.clientID,
-          clientSecret: store.clientSecret,
-          redirectURL: store.redirectURL,
-          refreshToken: tokens.refresh_token,
-        },
-      });
-      const player = new Player(newClient);
-      const accessToken = randomString(64);
-      const user = store.users.find(({ client }) => client.user.id === newClient.user.id);
       if (user) {
-        user.client = newClient;
-        user.player = player;
-        user.accessToken = accessToken;
+        user.client = newUser.client;
+        user.player = newUser.client;
       } else {
-        store.users.push({ client: newClient, player, accessToken, listeners: [], role: 'none' });
+        store.users.push(newUser);
       }
+
+      const accessToken = randomString(64);
+
+      const userStore = await UserStore.findOneAndUpdate(
+        { 'spotify.userId': newUser.client.user.id },
+        {
+          accessToken,
+          role: 'none',
+          spotify: {
+            refreshToken: newUser.client.refreshMeta.refreshToken,
+            userId: newUser.client.user.id,
+            local: true,
+          },
+        },
+        { upsert: true },
+      );
+
       res.status(200);
       res.send({ message: 'authorized', accessToken });
     } catch (e) {
-      console.log(e.message);
+      console.log(e);
       res.status(500);
       res.send({ message: 'unauthorized' });
     }
