@@ -9,6 +9,5 @@ export const auth = async (req, res, next) => {
     res.send({ message: 'unauthorized' });
     return;
   }
-  console.log('middleware', res.locals.user, await res.locals.user.spotify.local);
   next();
 };
