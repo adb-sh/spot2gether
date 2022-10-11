@@ -16,7 +16,7 @@ export const createLocalUser = async ({ refreshToken = undefined, code = undefin
     async onRefresh() {
       await UserStore.findOneAndUpdate(
         { 'spotify.userId': client.user.id },
-        { spotify: { refreshToken: client.refreshMeta.refreshToken } }
+        { 'spotify.refreshToken': client.refreshMeta.refreshToken },
       );
     },
   });
