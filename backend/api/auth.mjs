@@ -1,6 +1,6 @@
 import { store } from "../store.mjs";
 import { randomString } from "../lib/randomString.mjs";
-import { UserStore } from "../db/schemas.mjs";
+import { SessionStore, UserStore } from "../db/schemas.mjs";
 import { createLocalUser, findUserBySpotifyId } from "../lib/helpers.mjs";
 
 export const applyAuthRoutes = (router) => {
@@ -29,7 +29,6 @@ export const applyAuthRoutes = (router) => {
         { 'spotify.userId': newUser.client.user.id },
         {
           accessToken,
-          role: 'none',
           spotify: {
             refreshToken: newUser.client.refreshMeta.refreshToken,
             userId: newUser.client.user.id,
@@ -38,6 +37,13 @@ export const applyAuthRoutes = (router) => {
         },
         { upsert: true },
       );
+
+      if (!await SessionStore.findOne().bySpotifyId(newUser.client.user.id))
+        await new SessionStore({
+          host: userStore,
+          clients: [],
+          queue: [],
+        }).save();
 
       res.status(200);
       res.send({ message: 'authorized', accessToken });

@@ -30,4 +30,26 @@ const userSchema = new Schema({
   },
 });
 
+const sessionSchema = new Schema({
+  host: userSchema,
+  clients: Array,
+  queue: Array,
+}, {
+  query: {
+    byHostSpotifyId(id) {
+      return this.where({ 'host.spotify.userId': id });
+    },
+    byClientSpotifyId(id) {
+      return this.where({ 'clients.userId': id });
+    },
+    bySpotifyId(id) {
+      return this.where({ '$or': [
+        { 'host.spotify.userId': id },
+        { 'clients.spotify.userId': id },
+      ]});
+    },
+  },
+});
+
 export const UserStore = model('User', userSchema);
+export const SessionStore = model('Session', sessionSchema);

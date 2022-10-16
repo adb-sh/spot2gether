@@ -1,4 +1,5 @@
 import { applyUserRoutes, applyUserRoutesPublic } from "./user.mjs";
+import { applySessionRoutes } from "./session.mjs";
 
 export const applyApiRoutes = (router) => {
 
@@ -8,6 +9,7 @@ export const applyApiRoutes = (router) => {
   });
 
   applyUserRoutes(router);
+  applySessionRoutes(router);
 
 };
 
