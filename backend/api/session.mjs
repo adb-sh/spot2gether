@@ -21,11 +21,11 @@ export const applySessionRoutes = (router) => {
 
   router.get('/session', async (req, res) => {
     const user = res.locals.user;
-    const sessionStore = await SessionStore.findOne().byHostSpotifyId(user.id);
+    const sessionStore = await SessionStore.findOne().bySpotifyId(user.id);
 
     if (!sessionStore) {
       res.status(404);
-      res.send('you are not hosting a session');
+      res.send({ message: 'you are not hosting a session' });
       return;
     }
 
@@ -39,7 +39,7 @@ export const applySessionRoutes = (router) => {
 
     if (!sessionStore) {
       res.status(404);
-      res.send('you are not hosting a session');
+      res.send({ message: 'you are not hosting a session' });
       return;
     }
 

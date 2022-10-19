@@ -27,7 +27,7 @@ services:
       - redis
 
   frontend:
-    image: node:alpine
+    image: node:16-alpine
     volumes:
       - ./frontend/:/home/node/app/frontend/
     working_dir: /home/node/app/frontend
