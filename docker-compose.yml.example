@@ -1,13 +1,11 @@
 version: '3'
 
 services:
-  redis:
-    image: redis:alpine
-    expose:
-      - 6379
-    restart: always
+  mongodb:
+    image: mongo:5.0
     environment:
-      - REDIS_REPLICATION_MODE=master
+      - MONGO_INITDB_ROOT_USERNAME=spot2gether
+      - MONGO_INITDB_ROOT_PASSWORD=spot2gether
 
   backend:
     image: node:alpine
@@ -22,9 +20,9 @@ services:
       - NODE_ENV=production
     command: sh -c 'npm i && nodejs index.mjs'
     links:
-      - redis
+      - mongodb
     depends_on:
-      - redis
+      - mongodb
 
   frontend:
     build:
