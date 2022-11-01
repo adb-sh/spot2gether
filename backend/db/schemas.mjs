@@ -36,16 +36,19 @@ const sessionSchema = new Schema({
   queue: Array,
 }, {
   query: {
-    byHostSpotifyId(id) {
-      return this.where({ 'host.spotify.userId': id });
+    async byHostSpotifyId(id) {
+      const _id = (await UserStore.findOne().bySpotifyId(id))._id;
+      return this.where({ 'host._id': _id });
     },
-    byClientSpotifyId(id) {
-      return this.where({ 'clients.userId': id });
+    async byClientSpotifyId(id) {
+      const _id = (await UserStore.findOne().bySpotifyId(id))._id;
+      return this.where({ 'clients._id': _id });
     },
-    bySpotifyId(id) {
+    async bySpotifyId(id) {
+      const _id = (await UserStore.findOne().bySpotifyId(id))._id;
       return this.where({ '$or': [
-        { 'host.spotify.userId': id },
-        { 'clients.spotify.userId': id },
+        { 'host._id': _id },
+        { 'clients._id': _id },
       ]});
     },
   },

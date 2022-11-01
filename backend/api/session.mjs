@@ -1,10 +1,10 @@
-import { SessionStore } from "../db/schemas.mjs";
+import { SessionStore, UserStore } from "../db/schemas.mjs";
 
 export const applySessionRoutes = (router) => {
 
   router.post('/session', async (req, res) => {
     const user = res.locals.user;
-    if (await SessionStore.findOne().bySpotifyId(user.id)) {
+    if (await SessionStore.findOne().bySpotifyId(user.spotify.userId)) {
       res.status(400);
       res.send({ message: 'you are already in a session' });
       return;
@@ -21,7 +21,7 @@ export const applySessionRoutes = (router) => {
 
   router.get('/session', async (req, res) => {
     const user = res.locals.user;
-    const sessionStore = await SessionStore.findOne().bySpotifyId(user.id);
+    const sessionStore = await SessionStore.findOne().bySpotifyId(user.spotify.userId);
 
     if (!sessionStore) {
       res.status(404);
@@ -29,13 +29,26 @@ export const applySessionRoutes = (router) => {
       return;
     }
 
+    const session = {
+      ...sessionStore,
+      clients: await Promise.all([...sessionStore.clients].map(async client => {
+        const userStore = await UserStore.findById(client._id);
+        const user = await userStore.spotify.local;
+        return {
+          displayName: user.client.user.displayName,
+          totalFollowers: user.client.user.totalFollowers,
+          images: user.client.user.images,
+        };
+      })),
+    }
+
     res.status(200);
-    res.send({ session: sessionStore });
+    res.send({ session });
   });
 
   router.delete('/session', async (req, res) => {
     const user = res.locals.user;
-    const sessionStore = await SessionStore.findOne().byHostSpotifyId(user.id);
+    const sessionStore = await SessionStore.findOne().byHostSpotifyId(user.spotify.userId);
 
     if (!sessionStore) {
       res.status(404);
@@ -55,14 +68,14 @@ export const applySessionRoutes = (router) => {
       res.send({ message: 'hostId is undefined' });
       return;
     }
-    const { hostId } = req.body.hostId;
-    const user = await res.locals.user;
-    if (await SessionStore.findOne().bySpotifyId(user.id)) {
+    const { hostId } = req.body;
+    const user = res.locals.user;
+    if (await SessionStore.findOne().bySpotifyId(user.spotify.userId)) {
       res.status(400);
       res.send({ message: 'you are already in a session' });
       return;
     }
-    const sessionStore = SessionStore.findOne().byHostSpotifyId(hostId);
+    const sessionStore = await SessionStore.findOne().byHostSpotifyId(hostId);
     if (!sessionStore) {
       res.status(400);
       res.send({ message: 'session does not exist' });
@@ -77,8 +90,8 @@ export const applySessionRoutes = (router) => {
   });
 
   router.post('/session/leave', async (req, res) => {
-    const user = await res.locals.user;
-    const sessionStore = SessionStore.findOne().byClientSpotifyId(user.id);
+    const user = res.locals.user;
+    const sessionStore = await SessionStore.findOne().byClientSpotifyId(user.spotify.userId);
     if (!sessionStore) {
       res.status(400);
       res.send({ message: 'you are not a client of any session' });
