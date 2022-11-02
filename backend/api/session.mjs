@@ -1,4 +1,5 @@
 import { SessionStore, UserStore } from "../db/schemas.mjs";
+import { getSessionResource } from "../resources/session.mjs";
 
 export const applySessionRoutes = (router) => {
 
@@ -29,18 +30,7 @@ export const applySessionRoutes = (router) => {
       return;
     }
 
-    const session = {
-      ...sessionStore,
-      clients: await Promise.all([...sessionStore.clients].map(async client => {
-        const userStore = await UserStore.findById(client._id);
-        const user = await userStore.spotify.local;
-        return {
-          displayName: user.client.user.displayName,
-          totalFollowers: user.client.user.totalFollowers,
-          images: user.client.user.images,
-        };
-      })),
-    }
+    const session = await getSessionResource(sessionStore);
 
     res.status(200);
     res.send({ session });
@@ -98,10 +88,10 @@ export const applySessionRoutes = (router) => {
       return;
     }
 
-    sessionStore.clients = sessionStore.clients.filter(client => client.id !== user.id);
+    sessionStore.clients = sessionStore.clients.filter(client => client.spotify.userId !== user.spotify.userId);
     await sessionStore.save();
 
-    res.status(200);
+    res.status(201);
     res.send({ message: 'you left' });
   });
 

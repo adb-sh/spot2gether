@@ -38,13 +38,6 @@ export const applyAuthRoutes = (router) => {
         { upsert: true },
       );
 
-      if (!await SessionStore.findOne().bySpotifyId(newUser.client.user.id))
-        await new SessionStore({
-          host: userStore,
-          clients: [],
-          queue: [],
-        }).save();
-
       res.status(200);
       res.send({ message: 'authorized', accessToken });
     } catch (e) {

@@ -1,5 +1,5 @@
-import { store } from "../store.mjs";
 import { SessionStore, UserStore } from "../db/schemas.mjs";
+import { getUserResource } from "../resources/user.mjs";
 
 export const applyUserRoutes = (router) => {
 
@@ -26,28 +26,19 @@ export const applyUserRoutesPublic = (router) => {
       res.send({ message: 'userId is missing' });
     }
     const { userId } = req.params;
-    const hostDB = await UserStore.findOne().bySpotifyId(userId);
-    if (!hostDB) {
+    const userStore = await UserStore.findOne().bySpotifyId(userId);
+    if (!userStore) {
       res.status(400);
       res.send({ message: 'user is not registered' });
       return;
     }
-    const host = await hostDB?.spotify?.local;
-    if (!host.player) {
-      res.status(500);
-      res.send({ message: 'user is outdated' });
-      return;
-    }
+    const host = await userStore?.spotify?.local;
     try {
       const currentlyPlaying = await host.player.getCurrentlyPlaying('track');
       res.status(200);
       res.send({
         currentlyPlaying,
-        user: {
-          displayName: host.client.user.displayName,
-          totalFollowers: host.client.user.totalFollowers,
-          images: host.client.user.images,
-        },
+        user: await getUserResource(userStore),
       });
     } catch (e) {
       console.log(e);

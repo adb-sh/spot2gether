@@ -1,10 +1,10 @@
 import express from "express";
 import { auth } from "./middlewares/auth.mjs";
-
 import { applyAuthRoutes } from "./api/auth.mjs";
 import { applyApiRoutes, applyPublicRoutes } from "./api/index.mjs";
 import mongoose from "mongoose";
 import { store } from "./store.mjs";
+import { syncAllSessions } from "./syncSessions.mjs";
 
 // express server
 const port = 3000;
@@ -35,3 +35,8 @@ console.log('mongodb connected');
 
 app.listen(port);
 console.log('express started');
+
+setInterval(async () => {
+  await syncAllSessions();
+}, 5000);
+console.log('sync started');
