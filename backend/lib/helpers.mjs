@@ -41,4 +41,4 @@ export const findUserBySpotifyId = async (
   const newUser = await createLocalUser({ refreshToken });
   store.users.push(newUser);
   return newUser;
-}
+};

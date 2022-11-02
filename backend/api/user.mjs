@@ -6,7 +6,12 @@ export const applyUserRoutes = (router) => {
   applyUserRoutesPublic(router);
 
   router.get('/me/currentlyPlaying', async (req, res) => {
-    const currentlyPlaying = await (await res.locals.user.spotify.local)?.player?.getCurrentlyPlaying('track');
+    const userLocal = await res.locals.user.spotify.local;
+    if (!userLocal.player) {
+      res.status(500);
+      res.send({ message: 'player is unavailable' });
+    }
+    const currentlyPlaying = await userLocal.player.getCurrentlyPlaying('track');
     res.status(200);
     res.send({ currentlyPlaying });
   });

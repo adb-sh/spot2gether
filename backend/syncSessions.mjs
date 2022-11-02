@@ -14,14 +14,14 @@ export const syncSession = async sessionStore => {
     const clientStore = await UserStore.findById(client._id);
     const clientLocal = await clientStore.spotify.local;
     const clientCP = await clientLocal.player.getCurrentlyPlaying("track");
-    if (clientCP.isPlaying && !hostCP?.item?.uri || !hostCP.isPlaying) {
+    if (clientCP?.isPlaying && !hostCP?.item?.uri || !hostCP?.isPlaying) {
       await clientLocal.player.pause();
-    } else if (hostCP.isPlaying && clientCP?.item?.id !== hostCP?.item?.id || !clientCP.isPlaying) {
+    } else if (hostCP?.isPlaying && clientCP?.item?.id !== hostCP?.item?.id || !clientCP?.isPlaying) {
       await clientLocal.player.play({
         uris: [hostCP?.item?.uri],
         position: hostCP.progress + (new Date - hostCPDate),
       });
-    } else if (Math.abs(clientCP.progress - hostCP.progress + (new Date - hostCPDate)) > 500) {
+    } else if (clientCP?.isPlaying && hostCP?.isPlaying && Math.abs(clientCP.progress - hostCP.progress + (new Date - hostCPDate)) > 500) {
       await clientLocal.player.seek(hostCP.progress + (new Date - hostCPDate));
     }
   }));
