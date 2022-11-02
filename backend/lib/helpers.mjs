@@ -1,4 +1,4 @@
-import { Client, Player } from "spotify-api.js";
+import { Client, Player } from "adb-sh-spotify-api.js";
 import { store } from "../store.mjs";
 import { UserStore } from "../db/schemas.mjs";
 
