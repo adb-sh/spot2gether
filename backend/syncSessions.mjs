@@ -6,6 +6,7 @@ export const syncAllSessions = async () => {
 };
 
 export const syncSession = async sessionStore => {
+  if (sessionStore.clients.length === 0) return;
   const hostStore = await UserStore.findById(sessionStore.host._id);
   const host = await hostStore.spotify.local;
   const hostCP = await host.player.getCurrentlyPlaying("track");

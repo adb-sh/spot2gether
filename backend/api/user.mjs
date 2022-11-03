@@ -16,9 +16,8 @@ export const applyUserRoutes = (router) => {
     res.send({ currentlyPlaying });
   });
 
-  router.get('/me/role', (req, res) => {
-    res.status(200);
-    res.send({ role: res.locals.user?.role });
+  router.get('/me', async (req, res) => {
+    const user = await getUserResource(res.locals.user);
   });
 
 };
