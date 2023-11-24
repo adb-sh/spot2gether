@@ -33,7 +33,7 @@ jobs:
       - name: Build
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./frontend
           file: Dockerfile
           push: true
           tags: "ghcr.io/${{ github.repository }}-frontend:latest"
