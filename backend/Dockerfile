@@ -4,4 +4,4 @@ COPY . .
 
 RUN npm ci
 
-CMD "nodejs --unhandled-rejections=warn-with-error-code --trace-warnings index.mjs"
+CMD "node" "--unhandled-rejections=warn-with-error-code" "--trace-warnings" "index.mjs"
